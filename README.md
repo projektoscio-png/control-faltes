@@ -1,5 +1,7 @@
 # Control de Faltas
 
+Versión actual: **1.2**. La versión aparece abajo en la app, y la app avisa si algún archivo es de otra versión. El historial de cambios está en `CHANGELOG.md`.
+
 Registro de faltas injustificadas y retardos por alumno. Calcula las faltas leves y graves a poner en cada extracción.
 
 **Reglas por defecto** (se pueden cambiar en la app):

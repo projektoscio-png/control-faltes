@@ -1,7 +1,9 @@
+/* Control de Faltas v1.2 · app.js */
 (function(){
   var state = { rev: 0, config: null, alumnos: {} };
   var baseRev = 0, listeners = [], connected = false, saving = false, dirty = false, conflict = false, saveTimer = null;
-  var BM_CODE = "(function(){var d=document,rows=d.querySelectorAll('table.taula tr'),data=[],sf=0,sr=0,fecha='';rows.forEach(function(tr){var a=tr.querySelector('td.alumne-auto-assist a');if(!a)return;if(!fecha){try{fecha=new URL(a.href,location.href).searchParams.get('data2')||''}catch(e){}}var n=a.textContent.replace(/\\s+/g,' ').replace(/ ,/g,',').trim();var g=tr.querySelectorAll('td')[2];g=g?g.textContent.replace(/\\s+/g,' ').trim():'';var f=0,r=0,fd=[],rd=[];tr.querySelectorAll('.linia-auto-assist').forEach(function(l){var c=l.querySelector('input[type=checkbox]');if(c&&!c.checked)return;var k=l.querySelector('.f_al2');k=k?k.textContent.trim().toUpperCase():'';var m=l.textContent.match(/(\\d\\d)\\/(\\d\\d)\\/(\\d{4})/);var iso=m?m[3]+'-'+m[2]+'-'+m[1]:'';if(k==='F'){f++;sf=1;if(iso)fd.push(iso)}else if(k==='R'){r++;sr=1;if(iso)rd.push(iso)}});data.push([n,g,f,r,fd.sort().join(' '),rd.sort().join(' ')])});if(!data.length){alert('No se han encontrado alumnos en esta pagina.');return}var t=(fecha?'\\x23fecha='+fecha+'\\n':'')+data.map(function(x){return x[0]+';'+x[1]+';'+(sf?x[2]:'')+';'+(sr?x[3]:'')+';'+(sf?x[4]:'')+';'+(sr?x[5]:'')}).join('\\n');var o=d.createElement('div');o.style.cssText='position:fixed;z-index:2147483647;top:8vh;left:0;right:0;margin:0 auto;width:min(616px,88vw);background:#fff;color:#111;border:2px solid #1B5E7A;border-radius:8px;padding:12px;font:14px sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.4)';var m=d.createElement('div');m.style.marginBottom='8px';var ta=d.createElement('textarea');ta.value=t;ta.style.cssText='width:min(616px,88vw);height:220px;font:12px monospace';var b=d.createElement('button');b.textContent='Cerrar';b.style.marginTop='8px';b.onclick=function(){o.remove()};o.appendChild(m);o.appendChild(ta);o.appendChild(b);d.body.appendChild(o);ta.focus();ta.select();var ok=false;try{ok=d.execCommand('copy')}catch(e){}m.textContent=data.length+' alumnos. '+(ok?'Copiado al portapapeles: pegalo en la app.':'Pulsa Ctrl+C para copiar y pegalo en la app.')})()";
+  var APP_VERSION = '1.2', APP_DATE = '09/10/2026';
+  var BM_CODE = "(function(){var d=document,rows=d.querySelectorAll('table.taula tr'),data=[],sf=0,sr=0,fecha='';rows.forEach(function(tr){var a=tr.querySelector('td.alumne-auto-assist a');if(!a)return;if(!fecha){try{fecha=new URL(a.href,location.href).searchParams.get('data2')||''}catch(e){}}var n=a.textContent.replace(/\\s+/g,' ').replace(/ ,/g,',').trim();var g=tr.querySelectorAll('td')[2];g=g?g.textContent.replace(/\\s+/g,' ').trim():'';var f=0,r=0,fd=[],rd=[];tr.querySelectorAll('.linia-auto-assist').forEach(function(l){var c=l.querySelector('input[type=checkbox]');if(c&&!c.checked)return;var k=l.querySelector('.f_al2');k=k?k.textContent.trim().toUpperCase():'';var m=l.textContent.match(/(\\d\\d)\\/(\\d\\d)\\/(\\d{4})/);var iso=m?m[3]+'-'+m[2]+'-'+m[1]:'';if(k==='F'){f++;sf=1;if(iso)fd.push(iso)}else if(k==='R'){r++;sr=1;if(iso)rd.push(iso)}});data.push([n,g,f,r,fd.sort().join(' '),rd.sort().join(' ')])});if(!data.length){alert('No se han encontrado alumnos en esta pagina.');return}var t=(fecha?'\\x23fecha='+fecha+'\\n':'')+'\\x23marcador=2\\n'+data.map(function(x){return x[0]+';'+x[1]+';'+(sf?x[2]:'')+';'+(sr?x[3]:'')+';'+(sf?x[4]:'')+';'+(sr?x[5]:'')}).join('\\n');var o=d.createElement('div');o.style.cssText='position:fixed;z-index:2147483647;top:8vh;left:0;right:0;margin:0 auto;width:min(616px,88vw);background:#fff;color:#111;border:2px solid #1B5E7A;border-radius:8px;padding:12px;font:14px sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.4)';var m=d.createElement('div');m.style.marginBottom='8px';var ta=d.createElement('textarea');ta.value=t;ta.style.cssText='width:min(616px,88vw);height:220px;font:12px monospace';var b=d.createElement('button');b.textContent='Cerrar';b.style.marginTop='8px';b.onclick=function(){o.remove()};o.appendChild(m);o.appendChild(ta);o.appendChild(b);d.body.appendChild(o);ta.focus();ta.select();var ok=false;try{ok=d.execCommand('copy')}catch(e){}m.textContent='Marcador v2: '+data.length+' alumnos. '+(ok?'Copiado al portapapeles: pegalo en la app.':'Pulsa Ctrl+C para copiar y pegalo en la app.')})()";
   var $$ = function(s){ return document.querySelector(s); };
   function notify(){ listeners.forEach(function(l){ l(); }); }
   function newId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
@@ -149,6 +151,21 @@
       navigator.clipboard.writeText(t).then(function(){ toast('Código copiado'); }, function(){ toast('No se pudo copiar.'); });
     } else toast('No se pudo copiar.');
   });
+  (function(){
+    var bad = [];
+    var m = document.querySelector('meta[name="app-version"]');
+    if(!m || m.content !== APP_VERSION) bad.push('index.html (' + (m ? m.content : 'sin versión') + ')');
+    var cv = getComputedStyle(document.documentElement).getPropertyValue('--file-version').replace(/["'\s]/g, '');
+    if(cv !== APP_VERSION) bad.push('styles.css (' + (cv || 'sin versión') + ')');
+    if(!window.Drive || Drive.version !== APP_VERSION) bad.push('drive.js (' + ((window.Drive && Drive.version) || 'sin versión') + ')');
+    if(bad.length){
+      var v = document.createElement('div'); v.className = 'warn';
+      v.textContent = 'Hay archivos de otra versión. app.js es la ' + APP_VERSION + ' y estos no coinciden: ' + bad.join(', ') + '. Sube a GitHub la versión ' + APP_VERSION + ' de esos archivos.';
+      var w = document.querySelector('.wrap'); w.insertBefore(v, w.firstChild);
+    }
+    var ve = document.getElementById('ver');
+    if(ve) ve.textContent = 'Control de Faltas v' + APP_VERSION + ' · ' + APP_DATE;
+  })();
   if(!Drive.configured()){ $$('#nodb').hidden = false; $$('#bLogin').disabled = true; $$('#bAuth').disabled = true; }
   window.addEventListener('beforeunload', function(e){ if(dirty || saving){ e.preventDefault(); e.returnValue = ''; } });
 
@@ -156,7 +173,7 @@
   var db = makeDb(), dl = true;
   var students = [];
   var config = { fecha: todayISO(), uf: 6, ur: 6, ul: 6 };
-  var deleting = null, pendingRender = false, importRows = [], importFecha = null, expanded = {};
+  var deleting = null, pendingRender = false, importRows = [], importFecha = null, importMarker = null, expanded = {};
 
   function todayISO(){ var d=new Date(); var m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0'); return d.getFullYear()+'-'+m+'-'+day; }
   function fmt(iso){ if(!iso) return '—'; var p=String(iso).split('-'); return p.length===3 ? p[2]+'/'+p[1]+'/'+p[0] : iso; }
@@ -404,10 +421,11 @@
     return a.sort();
   }
   function parseImport(text){
-    importFecha=null;
+    importFecha=null; importMarker=null;
     var rows=[];
     text.split(/\r?\n/).forEach(function(line){
       line=line.trim(); if(!line) return;
+      var mk=line.match(/^#marcador=(\d+)$/); if(mk){ importMarker=+mk[1]; return; }
       var mf=line.match(/^#fecha=(\d{4}-\d{2}-\d{2})$/); if(mf){ importFecha=mf[1]; return; }
       var p=line.split(/\t|;/).map(function(x){return x.trim();});
       if(p.length<3 && line.indexOf(',')>=0) p=line.split(',').map(function(x){return x.trim();});
@@ -429,6 +447,9 @@
     var upd=0, nue=0;
     importRows.forEach(function(r){ if(students.some(function(s){return norm(s.nombre)===norm(r.nombre);})) upd++; else nue++; });
     $('#impInfo').textContent = importRows.length ? importRows.length+' filas válidas: '+upd+' se actualizan, '+nue+' son nuevos.'+(importFecha?' Fecha de la extracción: '+fmt(importFecha)+'.':'') : 'Sin filas válidas todavía.';
+    if(importRows.length && (importMarker||0)<2 && !importRows.some(function(r){ return r.fd||r.rd; })){
+      $('#impInfo').textContent += ' Estas líneas no traen fechas de las faltas: usa el marcador actual desde «Marcador para extraer los datos».';
+    }
     $('#impGo').disabled = !importRows.length;
   }
   $('#bImp').addEventListener('click',function(){ $('#impPanel').hidden=false; $('#impText').focus(); });
