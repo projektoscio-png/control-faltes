@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Control de Faltas</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Schibsted+Grotesk:wght@600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Control de Faltas</h1>
+      <p class="sub">Faltas injustificadas y retardos acumulados desde principio de curso.</p>
+    </div>
+    <div class="session">
+      <span id="saveStatus" class="status" role="status"></span>
+      <a id="folderLink" href="#" target="_blank" rel="noopener" hidden>Carpeta en Drive</a>
+      <button id="reauth" class="primary small" hidden>Reconectar</button>
+      <button id="bAuth">Conectar con Google Drive</button>
+    </div>
+  </div>
+
+  <div class="warn" id="nodb" hidden>Falta configurar el acceso a Google. Pega tu ID de cliente en config.js (consulta el README del proyecto).</div>
+
+  <section class="panel" id="login">
+    <h2>Tus datos viven en tu Google Drive</h2>
+    <p style="margin:0 0 10px">La app guarda los alumnos en la carpeta «Control de Faltas» de tu Drive. Solo puede ver los archivos que ella misma crea.</p>
+    <button class="primary" id="bLogin">Conectar con Google Drive</button>
+    <p class="note" id="loginMsg"></p>
+  </section>
+
+  <div class="warn conflict" id="conflict" hidden>
+    <span>Otro dispositivo ha guardado cambios en Drive.</span>
+    <button id="bReload">Cargar la versión de Drive</button>
+    <span>Se descartan los cambios de esta pantalla.</span>
+  </div>
+
+  <div class="stack" id="appMain" hidden>
+  <div class="form">
+    <label class="f" for="fecha" style="flex:0 1 200px">Fecha de la extracción<input type="date" id="fecha"></label>
+  </div>
+
+  <div class="stats" aria-label="Resumen">
+    <div class="stat"><b id="sAlumnos">0</b><span>Alumnos</span></div>
+    <div class="stat"><b id="sPend">0</b><span>Con sanción pendiente</span></div>
+    <div class="stat leve"><b id="sLeves">0</b><span>Faltas leves a poner</span></div>
+    <div class="stat grave"><b id="sGraves">0</b><span>Faltas graves a poner</span></div>
+  </div>
+
+  <div class="bar">
+    <input type="text" id="q" class="grow" placeholder="Buscar alumno" aria-label="Buscar alumno">
+    <select id="grupo" aria-label="Filtrar por grupo"><option value="">Todos los grupos</option></select>
+    <label><input type="checkbox" id="soloPend"> Solo pendientes</label>
+    <button id="bAdd">Añadir alumno</button>
+    <button id="bImp">Importar extracción</button>
+    <button class="primary" id="bClose">Cerrar extracción</button>
+    <button id="bCsv">Exportar CSV</button>
+  </div>
+
+  <div class="confirm" id="confirmClose" hidden>
+    <span id="confirmText"></span>
+    <button class="primary" id="bCloseYes">Confirmar</button>
+    <button id="bCloseNo">Cancelar</button>
+  </div>
+
+  <section class="panel" id="addPanel" hidden>
+    <h2>Nuevo alumno</h2>
+    <form class="form" id="addForm">
+      <label class="f" for="aNombre" style="flex:2 1 220px">Apellidos, nombre<input type="text" id="aNombre" required></label>
+      <label class="f" for="aGrupo">Grupo<input type="text" id="aGrupo"></label>
+      <label class="f" for="aFaltas">Faltas injust.<input type="number" id="aFaltas" min="0" step="1" value="0"></label>
+      <label class="f" for="aRet">Retardos<input type="number" id="aRet" min="0" step="1" value="0"></label>
+      <button class="primary" type="submit">Añadir</button>
+      <button type="button" id="aCancel">Cerrar</button>
+    </form>
+  </section>
+
+  <section class="panel" id="impPanel" hidden>
+    <h2>Importar extracción</h2>
+    <p class="note" style="margin:0 0 8px">Una línea por alumno: <span class="num">Apellidos, nombre ; Grupo ; Faltas injustificadas ; Retardos</span>. Los totales son acumulados del curso. Separa con punto y coma o tabulador (puedes pegar desde Excel). Un campo vacío no modifica ese total. Si el alumno ya existe se actualizan sus totales; si no, se crea. Una línea <span class="num">#fecha=AAAA-MM-DD</span> fija la fecha de la extracción.</p>
+    <textarea id="impText" aria-label="Datos a importar" placeholder="García Pérez, Ana;1º A;12;8&#10;López Ruiz, Marc;1º A;3;0"></textarea>
+    <div class="bar" style="margin-top:8px">
+      <input type="file" id="impFile" accept=".csv,.txt,.tsv" aria-label="Cargar archivo">
+      <span class="note" id="impInfo" style="margin:0"></span>
+      <span class="grow"></span>
+      <button class="primary" id="impGo" disabled>Aplicar importación</button>
+      <button id="impCancel">Cerrar</button>
+    </div>
+  </section>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr>
+        <th>Alumno</th><th>Faltas injust.</th><th>Retardos</th><th>Hacia la siguiente</th>
+        <th>Leves</th><th>Graves</th><th>Ya aplicadas</th><th>Última leve</th><th>A poner ahora</th><th></th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty" id="empty" hidden><b>Aún no hay alumnos</b>Añade uno o pega la extracción con «Importar extracción».</div>
+  </div>
+
+  <details class="panel">
+    <summary>Reglas de cálculo</summary>
+    <div class="form" style="margin-top:10px">
+      <label class="f" for="uF">Faltas injustificadas por leve<input type="number" id="uF" min="1" step="1"></label>
+      <label class="f" for="uR">Retardos por leve<input type="number" id="uR" min="1" step="1"></label>
+      <label class="f" for="uL">Leves por grave<input type="number" id="uL" min="1" step="1"></label>
+    </div>
+    <p class="note">Los totales son acumulados desde inicio de curso, así que el resultado equivale a reiniciar el conteo cada vez que se pone una leve. Al cerrar la extracción se guarda cuántas leves y graves ya se pusieron y la fecha; la siguiente extracción solo propone las nuevas.</p>
+    <p class="note">Los datos se guardan en este navegador y este equipo. Descarga una copia de seguridad de vez en cuando; restaurarla sustituye los datos actuales.</p>
+    <div class="bar" style="margin-top:8px">
+      <button class="small" id="bBackup">Descargar copia de seguridad</button>
+      <label class="small muted" for="bRestore">Restaurar copia:</label><input type="file" id="bRestore" accept=".json,application/json">
+      <button class="danger small" id="bDelEx" hidden>Borrar alumnos de ejemplo</button>
+    </div>
+  </details>
+
+  <details class="panel">
+    <summary>Marcador para extraer los datos</summary>
+    <p class="note">Arrastra este botón a la barra de marcadores. En la página de faltas pulsa el marcador y pega el resultado en «Importar extracción».</p>
+    <div class="bar" style="margin-top:8px"><a id="bmLink" class="bmlink" href="#">Extraer faltas</a><button class="small" id="bmCopy">Copiar código</button></div>
+    <p class="note">Si no puedes arrastrarlo: crea un marcador nuevo y pega el código copiado en el campo de la dirección.</p>
+  </details>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="config.js"></script>
+<script src="drive.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
