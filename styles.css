@@ -92,3 +92,12 @@ a{color:var(--accent)}
 .bmlink{display:inline-block;background:var(--accent);color:var(--accent-ink);padding:7px 12px;border-radius:6px;text-decoration:none;font-weight:500}
 .conflict{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 
+
+.namebtn{background:none;border:0;padding:0;font:inherit;font-weight:500;text-align:left;color:inherit;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+.namebtn:hover{color:var(--accent)}
+tr.detail td{background:var(--soft);padding:12px 16px}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px 24px}
+.dgrid>div{min-width:0}
+.dgrid h3{font:600 12px var(--font-display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.dgrid ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.dwarn{grid-column:1/-1;background:var(--grave-bg);color:var(--grave);border-radius:6px;padding:8px 10px}

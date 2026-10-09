@@ -79,7 +79,7 @@
 
   <section class="panel" id="impPanel" hidden>
     <h2>Importar extracción</h2>
-    <p class="note" style="margin:0 0 8px">Una línea por alumno: <span class="num">Apellidos, nombre ; Grupo ; Faltas injustificadas ; Retardos</span>. Los totales son acumulados del curso. Separa con punto y coma o tabulador (puedes pegar desde Excel). Un campo vacío no modifica ese total. Si el alumno ya existe se actualizan sus totales; si no, se crea. Una línea <span class="num">#fecha=AAAA-MM-DD</span> fija la fecha de la extracción.</p>
+    <p class="note" style="margin:0 0 8px">Una línea por alumno: <span class="num">Apellidos, nombre ; Grupo ; Faltas ; Retardos ; Fechas de las faltas ; Fechas de los retardos</span> (las dos últimas son opcionales). Los totales son acumulados del curso. Separa con punto y coma o tabulador (puedes pegar desde Excel). Un campo vacío no modifica ese total. Si el alumno ya existe se actualizan sus totales; si no, se crea. Una línea <span class="num">#fecha=AAAA-MM-DD</span> fija la fecha de la extracción.</p>
     <textarea id="impText" aria-label="Datos a importar" placeholder="García Pérez, Ana;1º A;12;8&#10;López Ruiz, Marc;1º A;3;0"></textarea>
     <div class="bar" style="margin-top:8px">
       <input type="file" id="impFile" accept=".csv,.txt,.tsv" aria-label="Cargar archivo">

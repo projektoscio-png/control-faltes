@@ -50,9 +50,26 @@ Mientras la app esté en modo prueba, Google mostrará un aviso de «aplicación
 
 La sesión de Google dura una hora; si caduca, la app avisa y basta con pulsar **Reconectar**. Si abres la app en dos dispositivos a la vez y guardas en ambos, la app avisa de un conflicto y te deja cargar la versión de Drive.
 
+## Fechas de cada falta
+
+El marcador extrae también la fecha de cada falta y de cada retardo, y la app las guarda por alumno. Haciendo clic en el nombre de un alumno se abre su detalle:
+
+- **Cuenta en curso**: cuántas faltas y retardos lleva hacia la siguiente leve, con sus fechas.
+- **Leves**: cada una con la fecha en que se completó (la de la sexta falta o retardo), desde qué fecha cuenta y si está aplicada o pendiente.
+- **Graves**: con la fecha en que se completó la sexta leve.
+- **Registros puestos**: la fecha de extracción en que registraste cada tanda de leves y graves.
+
+Si el total de un alumno baja respecto a la extracción anterior (por ejemplo, porque se justificó una falta), aparece el aviso **Revisar**. Se quita al cerrar la extracción.
+
+Los alumnos añadidos a mano o importados sin fechas siguen funcionando, pero sin el detalle por fechas.
+
 ## Marcador de extracción
 
-Lee la tabla de la página de faltas del centro: nombre, grupo, número de líneas con letra `F` (faltas) y `R` (retardos), solo las de casilla marcada. También toma la fecha final del rango. Todo ocurre en tu navegador y el resultado va al portapapeles.
+Lee la tabla de la página de faltas del centro: nombre, grupo, número de líneas con letra `F` (faltas) y `R` (retardos) con su fecha, solo las de casilla marcada. También toma la fecha final del rango. Todo ocurre en tu navegador y el resultado va al portapapeles.
+
+Formato de cada línea: `Apellidos, nombre ; Grupo ; Faltas ; Retardos ; Fechas de las faltas ; Fechas de los retardos`. Las dos últimas columnas son opcionales y las fechas van en formato `AAAA-MM-DD` separadas por espacios.
+
+Si cambias el marcador en una actualización, vuelve a instalarlo desde la app: el que tienes guardado en el navegador no se actualiza solo.
 
 ## Archivos
 

@@ -1,7 +1,7 @@
 (function(){
   var state = { rev: 0, config: null, alumnos: {} };
   var baseRev = 0, listeners = [], connected = false, saving = false, dirty = false, conflict = false, saveTimer = null;
-  var BM_CODE = "(function(){var d=document,rows=d.querySelectorAll('table.taula tr'),data=[],sf=0,sr=0,fecha='';rows.forEach(function(tr){var a=tr.querySelector('td.alumne-auto-assist a');if(!a)return;if(!fecha){try{fecha=new URL(a.href,location.href).searchParams.get('data2')||''}catch(e){}}var n=a.textContent.replace(/\\s+/g,' ').replace(/ ,/g,',').trim();var g=tr.querySelectorAll('td')[2];g=g?g.textContent.replace(/\\s+/g,' ').trim():'';var f=0,r=0;tr.querySelectorAll('.linia-auto-assist').forEach(function(l){var c=l.querySelector('input[type=checkbox]');if(c&&!c.checked)return;var k=l.querySelector('.f_al2');k=k?k.textContent.trim().toUpperCase():'';if(k==='F'){f++;sf=1}else if(k==='R'){r++;sr=1}});data.push([n,g,f,r])});if(!data.length){alert('No se han encontrado alumnos en esta pagina.');return}var t=(fecha?'\\x23fecha='+fecha+'\\n':'')+data.map(function(x){return x[0]+';'+x[1]+';'+(sf?x[2]:'')+';'+(sr?x[3]:'')}).join('\\n');var o=d.createElement('div');o.style.cssText='position:fixed;z-index:2147483647;top:8vh;left:0;right:0;margin:0 auto;width:min(616px,88vw);background:#fff;color:#111;border:2px solid #1B5E7A;border-radius:8px;padding:12px;font:14px sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.4)';var m=d.createElement('div');m.style.marginBottom='8px';var ta=d.createElement('textarea');ta.value=t;ta.style.cssText='width:min(616px,88vw);height:220px;font:12px monospace';var b=d.createElement('button');b.textContent='Cerrar';b.style.marginTop='8px';b.onclick=function(){o.remove()};o.appendChild(m);o.appendChild(ta);o.appendChild(b);d.body.appendChild(o);ta.focus();ta.select();var ok=false;try{ok=d.execCommand('copy')}catch(e){}m.textContent=data.length+' alumnos. '+(ok?'Copiado al portapapeles: pegalo en la app.':'Pulsa Ctrl+C para copiar y pegalo en la app.')})()";
+  var BM_CODE = "(function(){var d=document,rows=d.querySelectorAll('table.taula tr'),data=[],sf=0,sr=0,fecha='';rows.forEach(function(tr){var a=tr.querySelector('td.alumne-auto-assist a');if(!a)return;if(!fecha){try{fecha=new URL(a.href,location.href).searchParams.get('data2')||''}catch(e){}}var n=a.textContent.replace(/\\s+/g,' ').replace(/ ,/g,',').trim();var g=tr.querySelectorAll('td')[2];g=g?g.textContent.replace(/\\s+/g,' ').trim():'';var f=0,r=0,fd=[],rd=[];tr.querySelectorAll('.linia-auto-assist').forEach(function(l){var c=l.querySelector('input[type=checkbox]');if(c&&!c.checked)return;var k=l.querySelector('.f_al2');k=k?k.textContent.trim().toUpperCase():'';var m=l.textContent.match(/(\\d\\d)\\/(\\d\\d)\\/(\\d{4})/);var iso=m?m[3]+'-'+m[2]+'-'+m[1]:'';if(k==='F'){f++;sf=1;if(iso)fd.push(iso)}else if(k==='R'){r++;sr=1;if(iso)rd.push(iso)}});data.push([n,g,f,r,fd.sort().join(' '),rd.sort().join(' ')])});if(!data.length){alert('No se han encontrado alumnos en esta pagina.');return}var t=(fecha?'\\x23fecha='+fecha+'\\n':'')+data.map(function(x){return x[0]+';'+x[1]+';'+(sf?x[2]:'')+';'+(sr?x[3]:'')+';'+(sf?x[4]:'')+';'+(sr?x[5]:'')}).join('\\n');var o=d.createElement('div');o.style.cssText='position:fixed;z-index:2147483647;top:8vh;left:0;right:0;margin:0 auto;width:min(616px,88vw);background:#fff;color:#111;border:2px solid #1B5E7A;border-radius:8px;padding:12px;font:14px sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.4)';var m=d.createElement('div');m.style.marginBottom='8px';var ta=d.createElement('textarea');ta.value=t;ta.style.cssText='width:min(616px,88vw);height:220px;font:12px monospace';var b=d.createElement('button');b.textContent='Cerrar';b.style.marginTop='8px';b.onclick=function(){o.remove()};o.appendChild(m);o.appendChild(ta);o.appendChild(b);d.body.appendChild(o);ta.focus();ta.select();var ok=false;try{ok=d.execCommand('copy')}catch(e){}m.textContent=data.length+' alumnos. '+(ok?'Copiado al portapapeles: pegalo en la app.':'Pulsa Ctrl+C para copiar y pegalo en la app.')})()";
   var $$ = function(s){ return document.querySelector(s); };
   function notify(){ listeners.forEach(function(l){ l(); }); }
   function newId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
@@ -156,7 +156,7 @@
   var db = makeDb(), dl = true;
   var students = [];
   var config = { fecha: todayISO(), uf: 6, ur: 6, ul: 6 };
-  var deleting = null, pendingRender = false, importRows = [], importFecha = null;
+  var deleting = null, pendingRender = false, importRows = [], importFecha = null, expanded = {};
 
   function todayISO(){ var d=new Date(); var m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0'); return d.getFullYear()+'-'+m+'-'+day; }
   function fmt(iso){ if(!iso) return '—'; var p=String(iso).split('-'); return p.length===3 ? p[2]+'/'+p[1]+'/'+p[0] : iso; }
@@ -171,6 +171,89 @@
     var lf=Math.floor(f/uf), lr=Math.floor(r/ur), leves=lf+lr, graves=Math.floor(leves/ul);
     return { lf:lf, lr:lr, leves:leves, graves:graves, sf:f%uf, sr:r%ur, sl:leves%ul,
       nl:Math.max(0,leves-(+s.levesAplicadas||0)), ng:Math.max(0,graves-(+s.gravesAplicadas||0)) };
+  }
+
+
+  function okDates(arr, n){ return Array.isArray(arr) && arr.length > 0 && arr.length === n; }
+
+  // Leves completadas, en orden cronológico. null si faltan las fechas de las faltas/retardos.
+  function leveItems(s, c){
+    var uf = Math.max(1, config.uf), ur = Math.max(1, config.ur), f = +s.faltas || 0, r = +s.retardos || 0, k;
+    var fo = c.lf === 0 || okDates(s.fd, f), ro = c.lr === 0 || okDates(s.rd, r);
+    if(!fo || !ro) return null;
+    var fd = (s.fd || []).slice().sort(), rd = (s.rd || []).slice().sort(), items = [];
+    for(k = 1; k <= c.lf; k++) items.push({ fecha: fd[k*uf-1], origen: 'faltas', desde: fd[(k-1)*uf] });
+    for(k = 1; k <= c.lr; k++) items.push({ fecha: rd[k*ur-1], origen: 'retardos', desde: rd[(k-1)*ur] });
+    items.sort(function(a, b){ return a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : (a.origen === 'faltas' ? -1 : 1); });
+    return items;
+  }
+
+  function ultimaLeve(s, c){
+    var it = leveItems(s, c);
+    return (it && it.length) ? it[it.length-1].fecha : (s.fechaUltimaLeve || null);
+  }
+
+  function bajada(s){
+    if(s.aviso) return s.aviso;
+    var c = calc(s);
+    if(c.leves < (+s.levesAplicadas || 0)) return 'Ahora corresponden ' + c.leves + ' leves y ya habías aplicado ' + (+s.levesAplicadas || 0) + '.';
+    return '';
+  }
+
+  function detailRow(s, c){
+    var uf = Math.max(1, config.uf), ur = Math.max(1, config.ur), ul = Math.max(1, config.ul);
+    var f = +s.faltas || 0, r = +s.retardos || 0;
+    var items = leveItems(s, c), ap = +s.levesAplicadas || 0, gap = +s.gravesAplicadas || 0, h = '', i;
+    var fd = okDates(s.fd, f) ? s.fd.slice().sort() : null, rd = okDates(s.rd, r) ? s.rd.slice().sort() : null;
+
+    // cuenta en curso
+    var enCurso = '<li>Faltas: <b class="num">' + c.sf + '/' + uf + '</b>' +
+      (fd && c.sf > 0 ? ' (' + fd.slice(c.lf*uf).map(fmt).join(', ') + ')' : '') + '</li>' +
+      '<li>Retardos: <b class="num">' + c.sr + '/' + ur + '</b>' +
+      (rd && c.sr > 0 ? ' (' + rd.slice(c.lr*ur).map(fmt).join(', ') + ')' : '') + '</li>' +
+      '<li>Leves hacia la siguiente grave: <b class="num">' + c.sl + '/' + ul + '</b></li>';
+    h += '<div><h3>Cuenta en curso</h3><ul>' + enCurso + '</ul></div>';
+
+    // leves
+    var lv = '';
+    if(items){
+      var kf = 0, kr = 0, hasSplit = s.lfAplicadas !== undefined;
+      if(!items.length) lv = '<li class="muted">Todavía ninguna.</li>';
+      for(i = 0; i < items.length; i++){
+        var it = items[i];
+        if(it.origen === 'faltas') kf++; else kr++;
+        var aplic = hasSplit ? (it.origen === 'faltas' ? kf <= (+s.lfAplicadas || 0) : kr <= (+s.lrAplicadas || 0)) : i < ap;
+        lv += '<li>Leve ' + (i+1) + ' · ' + (it.origen === 'faltas' ? 'por faltas' : 'por retardos') +
+          ' · completada el <b>' + fmt(it.fecha) + '</b> (desde el ' + fmt(it.desde) + ') ' +
+          (aplic ? '<span class="badge ok">Aplicada</span>' : '<span class="badge l">Pendiente</span>') + '</li>';
+      }
+    } else if(f || r){
+      lv = '<li class="muted">Sin fechas de cada falta. Vuelve a importar la extracción con el marcador actualizado.</li>';
+    } else lv = '<li class="muted">Todavía ninguna.</li>';
+    h += '<div><h3>Leves (' + c.leves + ')</h3><ul>' + lv + '</ul></div>';
+
+    // graves
+    var gv = '';
+    if(c.graves === 0) gv = '<li class="muted">Todavía ninguna.</li>';
+    for(i = 1; i <= c.graves; i++){
+      var fg = items && items.length >= i*ul ? items[i*ul-1].fecha : null;
+      gv += '<li>Grave ' + i + (fg ? ' · completada el <b>' + fmt(fg) + '</b> ' : ' ') +
+        (i <= gap ? '<span class="badge ok">Aplicada</span>' : '<span class="badge g">Pendiente</span>') + '</li>';
+    }
+    h += '<div><h3>Graves (' + c.graves + ')</h3><ul>' + gv + '</ul></div>';
+
+    // registros
+    var rg = (s.registros || []).map(function(x){
+      var t = [];
+      if(x.leves) t.push('+' + x.leves + ' ' + plural(x.leves, 'leve', 'leves'));
+      if(x.graves) t.push('+' + x.graves + ' ' + plural(x.graves, 'grave', 'graves'));
+      return '<li><b class="num">' + fmt(x.fecha) + '</b> · ' + (t.join(', ') || 'sin cambios') + '</li>';
+    }).join('');
+    h += '<div><h3>Registros puestos</h3><ul>' + (rg || '<li class="muted">Todavía ninguno.</li>') + '</ul></div>';
+
+    var w = bajada(s);
+    if(w) h += '<div class="dwarn"><b>Revisar:</b> ' + esc(w) + ' Puede que se haya justificado una falta.</div>';
+    return '<tr class="detail"><td colspan="10"><div class="dgrid">' + h + '</div></td></tr>';
   }
 
   function visible(){
@@ -211,20 +294,21 @@
       var pc = pend
         ? '<div class="pendcell">'+(c.nl?'<span class="badge l">+'+c.nl+' '+plural(c.nl,'leve','leves')+'</span>':'')+(c.ng?'<span class="badge g">+'+c.ng+' '+plural(c.ng,'grave','graves')+'</span>':'')+'<button class="small" data-act="apply" data-id="'+esc(s.id)+'">Aplicar</button></div>'
         : '<span class="badge ok">Al día</span>';
+      var wb=bajada(s); if(wb) pc+=' <span class="badge g" title="'+esc(wb)+'">Revisar</span>';
       var del = deleting===s.id
         ? '<button class="small danger" data-act="delyes" data-id="'+esc(s.id)+'">¿Eliminar?</button> <button class="small" data-act="delno">No</button>'
         : '<button class="small" data-act="del" data-id="'+esc(s.id)+'" aria-label="Eliminar '+esc(s.nombre)+'">Eliminar</button>';
       return '<tr class="'+(pend?'pend':'')+(c.ng?' g':'')+'">'
-        +'<td class="name">'+esc(s.nombre)+(s.ejemplo?'<span class="ex">ejemplo</span>':'')+'<small>'+esc(s.grupo||'Sin grupo')+'</small></td>'
+        +'<td class="name"><button class="namebtn" data-act="toggle" data-id="'+esc(s.id)+'" aria-expanded="'+(expanded[s.id]?'true':'false')+'" title="Ver detalle">'+esc(s.nombre)+'</button>'+(s.ejemplo?'<span class="ex">ejemplo</span>':'')+'<small>'+esc(s.grupo||'Sin grupo')+'</small></td>'
         +'<td><input type="number" min="0" step="1" inputmode="numeric" value="'+(+s.faltas||0)+'" data-id="'+esc(s.id)+'" data-field="faltas" aria-label="Faltas injustificadas de '+esc(s.nombre)+'"></td>'
         +'<td><input type="number" min="0" step="1" inputmode="numeric" value="'+(+s.retardos||0)+'" data-id="'+esc(s.id)+'" data-field="retardos" aria-label="Retardos de '+esc(s.nombre)+'"></td>'
         +'<td><div class="ctrs">'+ctr('F',c.sf,config.uf)+ctr('R',c.sr,config.ur)+ctr('L',c.sl,config.ul)+'</div></td>'
         +'<td class="num" title="'+c.lf+' por faltas + '+c.lr+' por retardos">'+c.leves+'</td>'
         +'<td class="num">'+c.graves+'</td>'
         +'<td class="num muted">'+(+s.levesAplicadas||0)+' / '+(+s.gravesAplicadas||0)+'</td>'
-        +'<td class="num muted">'+fmt(s.fechaUltimaLeve)+'</td>'
+        +'<td class="num muted" title="Fecha en que se completó la última leve">'+fmt(ultimaLeve(s,c))+'</td>'
         +'<td>'+pc+'</td>'
-        +'<td>'+del+'</td></tr>';
+        +'<td>'+del+'</td></tr>'+(expanded[s.id]?detailRow(s,c):'');
     }).join('');
   }
 
@@ -249,7 +333,10 @@
     return db.doc('alumnos/'+s.id).update({
       levesAplicadas:c.leves, gravesAplicadas:c.graves,
       fechaUltimaLeve: c.nl>0 ? f : (s.fechaUltimaLeve||null),
-      fechaUltimaGrave: c.ng>0 ? f : (s.fechaUltimaGrave||null)
+      fechaUltimaGrave: c.ng>0 ? f : (s.fechaUltimaGrave||null),
+      aviso: null,
+      lfAplicadas: c.lf, lrAplicadas: c.lr,
+      registros: (c.nl||c.ng) ? (s.registros||[]).concat([{ fecha:f, leves:c.nl, graves:c.ng }]) : (s.registros||[])
     });
   }
 
@@ -269,6 +356,11 @@
     var b=e.target.closest('button[data-act]'); if(!b) return;
     var act=b.dataset.act, id=b.dataset.id;
     var s=students.filter(function(x){return x.id===id;})[0];
+    if(act==='toggle'){
+      expanded[id]=!expanded[id]; render();
+      var nb=document.querySelector('button[data-act="toggle"][data-id="'+id+'"]'); if(nb) nb.focus();
+      return;
+    }
     if(act==='apply' && s && guard()){
       applyRecord(s).then(function(){ toast('Registrado: '+s.nombre); }).catch(fail);
     } else if(act==='del'){ deleting=id; render(); }
@@ -305,6 +397,12 @@
   });
 
   // importar
+  function parseDates(s){
+    var a=String(s||'').split(/\s+/).filter(Boolean);
+    if(!a.length) return null;
+    for(var i=0;i<a.length;i++) if(!/^\d{4}-\d{2}-\d{2}$/.test(a[i])) return null;
+    return a.sort();
+  }
   function parseImport(text){
     importFecha=null;
     var rows=[];
@@ -314,12 +412,15 @@
       var p=line.split(/\t|;/).map(function(x){return x.trim();});
       if(p.length<3 && line.indexOf(',')>=0) p=line.split(',').map(function(x){return x.trim();});
       if(p.length<3) return;
-      var nombre, grupo='', f, r;
+      var nombre, grupo='', f, r, fs='', rs='';
       if(p.length===3){ nombre=p[0]; f=p[1]; r=p[2]; }
-      else { nombre=p[0]; grupo=p[1]; f=p[2]; r=p[3]; }
+      else { nombre=p[0]; grupo=p[1]; f=p[2]; r=p[3]; fs=p[4]||''; rs=p[5]||''; }
       if(!/^\d*$/.test(String(f))||!/^\d*$/.test(String(r))||(f===''&&r==='')) return; // cabecera u otra fila no válida
       if(!nombre) return;
-      rows.push({ nombre:nombre, grupo:grupo, faltas:f===''?null:parseInt(f,10), retardos:r===''?null:parseInt(r,10) });
+      var fd=parseDates(fs), rd=parseDates(rs);
+      var fn=f===''?null:parseInt(f,10), rn=r===''?null:parseInt(r,10);
+      if(fd) fn=fd.length; if(rd) rn=rd.length;
+      rows.push({ nombre:nombre, grupo:grupo, faltas:fn, retardos:rn, fd:fd, rd:rd });
     });
     return rows;
   }
@@ -346,9 +447,15 @@
         var s=students.filter(function(x){return norm(x.nombre)===norm(r.nombre);})[0];
         if(s){
           var o={}; if(r.faltas!==null) o.faltas=r.faltas; if(r.retardos!==null) o.retardos=r.retardos; if(r.grupo) o.grupo=r.grupo;
+          var av=[];
+          if(r.faltas!==null && r.faltas<(+s.faltas||0)) av.push('Faltas: '+(+s.faltas||0)+' → '+r.faltas);
+          if(r.retardos!==null && r.retardos<(+s.retardos||0)) av.push('Retardos: '+(+s.retardos||0)+' → '+r.retardos);
+          if(av.length) o.aviso=av.join('; ')+' (extracción del '+fmt(config.fecha)+').';
+          if(r.fd) o.fd=r.fd; else if(r.faltas===0) o.fd=[];
+          if(r.rd) o.rd=r.rd; else if(r.retardos===0) o.rd=[];
           return db.doc('alumnos/'+s.id).update(o);
         }
-        return db.collection('alumnos').add({ nombre:r.nombre, grupo:r.grupo, faltas:r.faltas||0, retardos:r.retardos||0,
+        return db.collection('alumnos').add({ nombre:r.nombre, grupo:r.grupo, faltas:r.faltas||0, retardos:r.retardos||0, fd:r.fd||[], rd:r.rd||[],
           levesAplicadas:0, gravesAplicadas:0, fechaUltimaLeve:null, fechaUltimaGrave:null });
       });
       toast('Extracción importada: '+importRows.length+' alumnos');
@@ -368,7 +475,7 @@
     if(!guard()) return;
     $('#confirmClose').hidden=true;
     var list=students.filter(function(s){ var c=calc(s); return c.nl||c.ng; });
-    try{ await inChunks(list,applyRecord); toast('Extracción cerrada: '+list.length+' alumnos registrados'); Drive.backup('copia-cierre-'+config.fecha+'.json',state).catch(function(){}); }
+    try{ await inChunks(students.filter(function(s){ var c=calc(s); return c.nl||c.ng||s.aviso; }),applyRecord); toast('Extracción cerrada: '+list.length+' alumnos registrados'); Drive.backup('copia-cierre-'+config.fecha+'.json',state).catch(function(){}); }
     catch(e){ fail(e); }
   });
 
