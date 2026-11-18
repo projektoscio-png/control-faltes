@@ -1,6 +1,6 @@
 # Control de Faltas
 
-Versión actual: **1.2**. La versión aparece abajo en la app, y la app avisa si algún archivo es de otra versión. El historial de cambios está en `CHANGELOG.md`.
+Versión actual: **1.3**. La versión aparece abajo en la app, y la app avisa si algún archivo es de otra versión. El historial de cambios está en `CHANGELOG.md`.
 
 Registro de faltas injustificadas y retardos por alumno. Calcula las faltas leves y graves a poner en cada extracción.
 
@@ -67,7 +67,7 @@ Los alumnos añadidos a mano o importados sin fechas siguen funcionando, pero si
 
 ## Marcador de extracción
 
-Lee la tabla de la página de faltas del centro: nombre, grupo, número de líneas con letra `F` (faltas) y `R` (retardos) con su fecha, solo las de casilla marcada. También toma la fecha final del rango. Todo ocurre en tu navegador y el resultado va al portapapeles.
+Lee la tabla de la página de faltas del centro: nombre, grupo, número de líneas con letra `F` mayúscula (falta injustificada) y `R` mayúscula (retardo). Las letras en minúscula (`f`, `r`) son justificadas y no se cuentan con su fecha, solo las de casilla marcada. También toma la fecha final del rango. Todo ocurre en tu navegador y el resultado va al portapapeles.
 
 Formato de cada línea: `Apellidos, nombre ; Grupo ; Faltas ; Retardos ; Fechas de las faltas ; Fechas de los retardos`. Las dos últimas columnas son opcionales y las fechas van en formato `AAAA-MM-DD` separadas por espacios.
 

@@ -1,4 +1,4 @@
-/* Control de Faltas v1.2 · drive.js */
+/* Control de Faltas v1.3 · drive.js */
 /* Almacenamiento en Google Drive (carpeta propia de la app).
    Scope drive.file: la app solo ve los archivos que ella misma crea. */
 (function(){
@@ -169,7 +169,7 @@
   }
 
   window.Drive = {
-    version: '1.2',
+    version: '1.3',
     configured: configured, connect: connect, load: load, save: save, backup: backup,
     disconnect: disconnect, explain: explain,
     folderUrl: function(){ return 'https://drive.google.com/drive/folders/' + folderId; }
