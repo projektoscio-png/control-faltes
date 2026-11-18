@@ -4,6 +4,7 @@ Cada versión indica qué archivos cambian. Sube a GitHub solo esos archivos, co
 
 | Versión | Fecha | Cambios | Archivos que cambian |
 |---|---|---|---|
+| 1.4 | 18/11/2026 | El marcador cuenta como retardos las líneas `AR` (antes solo contaba `R`). Cualquier código con minúsculas se ignora como justificado. Marcador v4. | `app.js`, `index.html`, `styles.css`, `drive.js`, `README.md`, `CHANGELOG.md` |
 | 1.3 | 18/11/2026 | El marcador distingue mayúsculas y minúsculas: solo `F` y `R` mayúsculas cuentan; `f` y `r` minúsculas (justificadas) se ignoran. Marcador v3. Aviso si pegas datos de un marcador anterior. | `app.js`, `index.html`, `styles.css`, `drive.js`, `README.md`, `CHANGELOG.md` |
 | 1.2 | 09/10/2026 | Versión visible en la app. Aviso si algún archivo es de otra versión. Aviso si pegas datos de un marcador antiguo, sin fechas. Marcador v2 con identificador. | `app.js`, `index.html`, `styles.css`, `drive.js`, `README.md`, `CHANGELOG.md` |
 | 1.1 | 09/10/2026 | Fechas de cada falta y retardo. Detalle por alumno con leves y graves completadas, y registros puestos. Aviso «Revisar» cuando un total baja. | `app.js`, `index.html`, `styles.css`, `README.md` |

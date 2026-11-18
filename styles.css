@@ -1,5 +1,5 @@
-/* Control de Faltas v1.3 · styles.css */
-:root{--file-version:"1.3"}
+/* Control de Faltas v1.4 · styles.css */
+:root{--file-version:"1.4"}
 /* Layout: cabecera con fecha y resumen, barra de acciones, tabla de alumnos con pendientes a la vista. */
 :root{
   --bg:#F2F4F7; --surface:#FFFFFF; --ink:#16202D; --muted:#5B6878; --line:#D9DEE5; --soft:#EAEEF3;
